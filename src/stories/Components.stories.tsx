@@ -13,7 +13,7 @@ const FeatureItemMeta: Meta<typeof FeatureItem> = {
     icon: '🎤',
     title: 'Crie por voz',
     subtitle: 'Fale para criar tarefas',
-    iconBgColor: '#EDE9FE',
+    iconBgColor: '#ffffff',
   },
 };
 
@@ -26,7 +26,7 @@ export const Voice: Story = {
     icon: '🎤',
     title: 'Crie por voz',
     subtitle: 'Fale para criar tarefas',
-    iconBgColor: '#EDE9FE',
+    iconBgColor: '#ffffff',
   },
 };
 
@@ -55,19 +55,19 @@ export const AllFeatureItems: Story = {
         icon="🎤"
         title="Crie por voz"
         subtitle="Fale para criar tarefas"
-        iconBgColor="#EDE9FE"
+        iconBgColor="#ffffff"
       />
       <FeatureItem
         icon="👥"
         title="Tarefas compartilhadas"
         subtitle="Planeje com outras pessoas"
-        iconBgColor="#E8F0F7"
+        iconBgColor="#ffffff"
       />
       <FeatureItem
         icon="📅"
         title="Sintonize sua agenda"
         subtitle="Conecte seus compromissos"
-        iconBgColor="#F0FDF4"
+        iconBgColor="#ffffff"
       />
     </div>
   ),

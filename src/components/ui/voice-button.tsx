@@ -16,10 +16,8 @@ export function VoiceButton({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 text-white text-xs px-3.5 py-2 rounded-full font-medium transition-all ${
-        isRecording
-          ? 'bg-red-500 animate-pulse'
-          : 'bg-[#0D2137] hover:bg-[#1a3a5c]'
+      className={`flex items-center gap-1.5 text-white text-sm px-4 py-2 rounded-full font-medium transition-all ${
+        isRecording ? 'bg-red-500 animate-pulse' : 'bg-black hover:bg-[#242320]'
       }`}
     >
       <span>🎤</span>

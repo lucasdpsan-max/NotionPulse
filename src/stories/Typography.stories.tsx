@@ -1,75 +1,96 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
+import { typography } from '@/lib/tokens';
+
+const headingStyles = [
+  { label: 'H2 · 48/50', size: '48px', lh: '50px', ls: '-0.4px', text: 'Crie tarefas por voz' },
+  { label: 'H3 · 40/44', size: '40px', lh: '44px', ls: '-0.4px', text: 'Vamos começar?' },
+  { label: 'H5 · 28/31', size: '28px', lh: '31px', ls: '0', text: 'Ativar modo foco' },
+];
+
+const bodyStyles = [
+  { label: 'lg · 18/27', size: '18px', lh: '27px', text: 'minutos' },
+  { label: 'base · 16/24', size: '16px', lh: '24px', text: 'Transforme ideias em ações.' },
+  { label: 'sm · 14/22', size: '14px', lh: '22px', text: 'Fale naturalmente e transforme suas ideias em tarefas.' },
+  { label: 'xs · 12/16', size: '12px', lh: '16px', text: 'Estudo sem vínculo oficial com a marca.' },
+  { label: '2xs · 10/14', size: '10px', lh: '14px', text: 'Resetar' },
+];
 
 const TypographyScale = () => (
   <div className="p-8 bg-white min-h-screen max-w-2xl">
-    <h1 className="text-2xl font-bold text-[#0D2137] mb-8">Typography Scale</h1>
+    <h1 className="text-2xl font-bold text-[#242320] mb-1">Tipografia</h1>
+    <p className="text-sm text-[#78736f] mb-8">
+      Geist (headings) · Inter (body) — escala extraída do Figma.
+    </p>
 
     <section className="mb-10">
-      <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-6">Headings</h2>
+      <h2 className="text-xs font-semibold text-[#78736f] uppercase tracking-wider mb-6">
+        Headings · Geist
+      </h2>
       <div className="flex flex-col gap-6">
-        {[
-          { label: '5xl / 48px', className: 'text-5xl font-bold text-[#0D2137]', text: 'Heading 5XL' },
-          { label: '4xl / 36px', className: 'text-4xl font-bold text-[#0D2137]', text: 'Heading 4XL' },
-          { label: '3xl / 30px', className: 'text-3xl font-bold text-[#0D2137]', text: 'Heading 3XL' },
-          { label: '2xl / 24px', className: 'text-2xl font-bold text-[#0D2137]', text: 'Heading 2XL' },
-          { label: 'xl / 20px', className: 'text-xl font-bold text-[#0D2137]', text: 'Heading XL' },
-          { label: 'lg / 18px', className: 'text-lg font-semibold text-[#0D2137]', text: 'Heading LG' },
-        ].map(({ label, className, text }) => (
+        {headingStyles.map(({ label, size, lh, ls, text }) => (
           <div key={label} className="flex items-baseline gap-4">
-            <span className="text-xs text-gray-400 font-mono w-24 flex-shrink-0">{label}</span>
-            <span className={className}>{text}</span>
+            <span className="text-xs text-[#78736f] font-mono w-28 flex-shrink-0">{label}</span>
+            <span
+              style={{
+                fontFamily: typography.fontHeading,
+                fontSize: size,
+                lineHeight: lh,
+                letterSpacing: ls,
+                fontWeight: 500,
+                color: '#242320',
+              }}
+            >
+              {text}
+            </span>
           </div>
         ))}
       </div>
     </section>
 
     <section className="mb-10">
-      <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-6">Body Text</h2>
+      <h2 className="text-xs font-semibold text-[#78736f] uppercase tracking-wider mb-6">
+        Body · Inter
+      </h2>
       <div className="flex flex-col gap-4">
-        {[
-          { label: 'base / 16px', className: 'text-base text-gray-800', text: 'Body base — Transforme ideias em ações.' },
-          { label: 'sm / 14px', className: 'text-sm text-gray-600', text: 'Body small — Fale naturalmente e transforme suas ideias em tarefas.' },
-          { label: 'xs / 12px', className: 'text-xs text-gray-400', text: 'Body xs — Estudo sem vínculo oficial com a marca.' },
-        ].map(({ label, className, text }) => (
+        {bodyStyles.map(({ label, size, lh, text }) => (
           <div key={label} className="flex items-start gap-4">
-            <span className="text-xs text-gray-400 font-mono w-24 flex-shrink-0 pt-0.5">{label}</span>
-            <span className={className}>{text}</span>
+            <span className="text-xs text-[#78736f] font-mono w-28 flex-shrink-0 pt-1">{label}</span>
+            <span style={{ fontFamily: typography.fontBody, fontSize: size, lineHeight: lh, color: '#242320' }}>
+              {text}
+            </span>
           </div>
         ))}
       </div>
     </section>
 
     <section className="mb-10">
-      <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-6">Font Weights</h2>
+      <h2 className="text-xs font-semibold text-[#78736f] uppercase tracking-wider mb-6">Pesos</h2>
       <div className="flex flex-col gap-3">
         {[
-          { weight: 'font-normal', label: 'Regular (400)' },
-          { weight: 'font-medium', label: 'Medium (500)' },
-          { weight: 'font-semibold', label: 'Semibold (600)' },
-          { weight: 'font-bold', label: 'Bold (700)' },
-          { weight: 'font-extrabold', label: 'Extrabold (800)' },
+          { weight: 400, label: 'Regular (400)' },
+          { weight: 500, label: 'Medium (500)' },
+          { weight: 600, label: 'Semibold (600)' },
         ].map(({ weight, label }) => (
           <div key={weight} className="flex items-center gap-4">
-            <span className="text-xs text-gray-400 font-mono w-24 flex-shrink-0">{weight.replace('font-', '')}</span>
-            <span className={`text-base text-[#0D2137] ${weight}`}>{label}</span>
+            <span className="text-xs text-[#78736f] font-mono w-28 flex-shrink-0">{weight}</span>
+            <span className="text-base text-[#242320]" style={{ fontWeight: weight }}>{label}</span>
           </div>
         ))}
       </div>
     </section>
 
     <section>
-      <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-6">Color Variants</h2>
+      <h2 className="text-xs font-semibold text-[#78736f] uppercase tracking-wider mb-6">Cores de texto</h2>
       <div className="flex flex-col gap-3">
         {[
-          { color: 'text-[#0D2137]', label: 'Primary Navy', text: 'NotionPulse — Primary Text' },
-          { color: 'text-gray-600', label: 'Secondary', text: 'NotionPulse — Secondary Text' },
-          { color: 'text-gray-400', label: 'Muted', text: 'NotionPulse — Muted Text' },
-          { color: 'text-[#7C3AED]', label: 'Purple', text: 'NotionPulse — Accent Text' },
-          { color: 'text-[#F5A623]', label: 'Yellow', text: 'NotionPulse — Yellow Text' },
-        ].map(({ color, label, text }) => (
-          <div key={color} className="flex items-center gap-4">
-            <span className="text-xs text-gray-400 font-mono w-28 flex-shrink-0">{label}</span>
-            <span className={`text-base font-medium ${color}`}>{text}</span>
+          { color: '#242320', label: 'text/default' },
+          { color: '#5f5b57', label: 'text/soft' },
+          { color: '#78736f', label: 'text/subtle' },
+          { color: '#000000', label: 'text/strong' },
+        ].map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-4">
+            <span className="text-xs text-[#78736f] font-mono w-28 flex-shrink-0">{label}</span>
+            <span className="text-base font-medium" style={{ color }}>NotionPulse</span>
           </div>
         ))}
       </div>
@@ -78,12 +99,9 @@ const TypographyScale = () => (
 );
 
 const meta: Meta = {
-  title: 'Design System/Typography',
+  title: 'Design System/Tipografia',
   component: TypographyScale,
-  parameters: {
-    layout: 'fullscreen',
-    backgrounds: { default: 'white' },
-  },
+  parameters: { layout: 'fullscreen', backgrounds: { default: 'white' } },
 };
 
 export default meta;
