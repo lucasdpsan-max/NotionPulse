@@ -175,7 +175,7 @@ export default function PomodoroPage() {
             <path d="M18 6L6 18M6 6l12 12" stroke="#242320" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </button>
-        <h1 className="text-base font-semibold text-[#242320]">Pomodoro</h1>
+        <h1 className="text-sm font-semibold text-[#242320]">Pomodoro</h1>
         <button className="w-9 h-9 flex items-center justify-center rounded-full bg-[#f7f7f5] border border-[#edeceb] text-lg">
           🎵
         </button>
@@ -203,8 +203,8 @@ export default function PomodoroPage() {
 
       {/* Title */}
       <div className="text-center px-5 mb-6">
-        <h2 className="text-2xl font-medium">
-          <span className="text-[#78736f]">Ativar </span>
+        <h2 className="text-[28px] leading-[31px] font-medium">
+          <span className="text-[#5f5b57]">Ativar </span>
           <span className="text-[#e89d01]">⚡</span>
           <span className="text-[#242320]"> modo foco</span>
         </h2>
@@ -339,7 +339,7 @@ export default function PomodoroPage() {
             y={CY + 30}
             textAnchor="middle"
             dominantBaseline="middle"
-            fontSize="14"
+            fontSize="18"
             fill="#78736f"
             fontFamily="Inter, system-ui, sans-serif"
           >
@@ -362,69 +362,52 @@ export default function PomodoroPage() {
         </svg>
       </div>
 
-      {/* Control Buttons */}
-      <div className="flex items-center justify-center gap-6 px-5 mb-8">
-        {/* Reset */}
-        <button
-          onClick={handleReset}
-          className="flex flex-col items-center gap-1"
-        >
-          <div className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M1 4v6h6M23 20v-6h-6" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Control Buttons — Resetar | Play | Finalizar */}
+      <div className="flex items-center justify-center gap-4 px-5 mb-8">
+        {/* Reset (label left of circle) */}
+        <button onClick={handleReset} className="flex items-center gap-2">
+          <span className="text-[10px] text-[#78736f]">Resetar</span>
+          <div className="w-10 h-10 rounded-full bg-white border border-[#edeceb] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M1 4v6h6M23 20v-6h-6" stroke="#5f5b57" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="#5f5b57" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span className="text-xs text-gray-400">Resetar</span>
         </button>
 
-        {/* Play button (large) */}
+        {/* Play / Pause (large black) */}
         <button
           onClick={isRunning ? handleStop : handlePlay}
-          className="w-16 h-16 rounded-full bg-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          aria-label={isRunning ? 'Pausar' : 'Iniciar'}
+          className="w-[72px] h-[72px] rounded-full bg-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
           {isRunning ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
               <rect x="6" y="4" width="4" height="16" rx="1" fill="white"/>
               <rect x="14" y="4" width="4" height="16" rx="1" fill="white"/>
             </svg>
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-              <path d="M5 3l14 9-14 9V3z" fill="white"/>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+              <path d="M6 4l14 8-14 8V4z" fill="white"/>
             </svg>
           )}
         </button>
 
-        {/* Stop */}
-        <button
-          onClick={() => {
-            handleReset();
-          }}
-          className="flex flex-col items-center gap-1"
-        >
-          <div className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="18" height="18" rx="2" stroke="#6B7280" strokeWidth="2" fill="none"/>
+        {/* Finalizar (circle then label right) */}
+        <button onClick={handleFinish} className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-white border border-[#edeceb] flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="16" height="16" rx="3" fill="#242320"/>
             </svg>
           </div>
-          <span className="text-xs text-gray-400">Parar</span>
-        </button>
-      </div>
-
-      {/* Finalizar button */}
-      <div className="flex justify-center mb-4">
-        <button
-          onClick={handleFinish}
-          className="text-sm font-medium text-[#7237ae] px-6 py-2"
-        >
-          Finalizar
+          <span className="text-[10px] text-[#78736f]">Finalizar</span>
         </button>
       </div>
 
       {/* Bottom text */}
       <div className="flex-1 flex items-end justify-center pb-10 px-5">
-        <p className="text-xs text-gray-400 text-center">
-          Sem distrações. Só você e a próxima tarefa.
+        <p className="text-xs text-[#78736f] text-center">
+          Sem distrações. Só você e a próxima tarefa
         </p>
       </div>
 
