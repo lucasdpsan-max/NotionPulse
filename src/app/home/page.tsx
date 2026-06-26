@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import IllustrationHome from '@/assets/Illustration_home.svg';
 import {
   useCreateTask,
+  useDeleteTask,
   useTasks,
   useUpdateTask,
   type Task,
@@ -46,6 +47,8 @@ export default function HomePage() {
   const { data: tasks = [], isLoading } = useTasks();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
@@ -124,13 +127,24 @@ export default function HomePage() {
   };
 
   const handleFileUpload = () => fileInputRef.current?.click();
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Image-to-task extraction would run here; for now create a placeholder task.
-      createTask.mutate({ title: `Imagem: ${file.name}` });
-    }
     e.target.value = '';
+    if (!file) return;
+    setIsAnalyzingImage(true);
+    try {
+      const form = new FormData();
+      form.append('image', file);
+      const res = await fetch('/api/image', { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Falha ao analisar a imagem');
+      const data = await res.json();
+      const titles: string[] = Array.isArray(data.tasks) ? data.tasks : [];
+      titles.forEach((title) => createTask.mutate({ title }));
+    } catch {
+      createTask.mutate({ title: `Imagem: ${file.name}` });
+    } finally {
+      setIsAnalyzingImage(false);
+    }
   };
 
   return (
@@ -219,7 +233,12 @@ export default function HomePage() {
 
       {/* Task list */}
       <section className="px-5 pt-6 pb-4 flex-1">
-        <h2 className="text-sm font-semibold text-[#0D2137] mb-3">Suas tarefas</h2>
+        <h2 className="text-sm font-semibold text-[#0D2137] mb-3">
+          Suas tarefas
+          {isAnalyzingImage && (
+            <span className="ml-2 text-xs font-normal text-gray-400">analisando imagem…</span>
+          )}
+        </h2>
         {isLoading ? (
           <p className="text-xs text-gray-400">Carregando…</p>
         ) : tasks.length === 0 ? (
@@ -255,6 +274,15 @@ export default function HomePage() {
                 >
                   {task.title}
                 </span>
+                <button
+                  onClick={() => deleteTask.mutate(task.id)}
+                  aria-label="Remover tarefa"
+                  className="text-gray-300 hover:text-red-400 flex-shrink-0"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </button>
               </li>
             ))}
           </ul>
@@ -339,7 +367,10 @@ export default function HomePage() {
               ))}
             </nav>
             <div className="mt-auto px-6 pb-8">
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors">
+              <button
+                onClick={() => signOut({ callbackUrl: '/onboarding' })}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors"
+              >
                 <span>🚪</span>
                 <span className="text-sm font-medium text-red-500">Sair</span>
               </button>
