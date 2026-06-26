@@ -36,6 +36,27 @@ const featureItems = [
   },
 ];
 
+function buildICS(items: { id: string; title: string }[]): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const now = new Date();
+  const day = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+  const stamp = `${day}T${pad(now.getHours())}${pad(now.getMinutes())}00`;
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//NotionPulse//PT-BR', 'CALSCALE:GREGORIAN'];
+  for (const t of items) {
+    const summary = t.title.replace(/[\n,;]/g, ' ').trim();
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${t.id}@notionpulse`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${day}`,
+      `SUMMARY:${summary}`,
+      'END:VEVENT',
+    );
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
 export default function HomePage() {
   const { data: session } = useSession();
   const user = {
@@ -51,6 +72,9 @@ export default function HomePage() {
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sharedSheetOpen, setSharedSheetOpen] = useState(false);
+  const [agendaSheetOpen, setAgendaSheetOpen] = useState(false);
+  const [feedback, setFeedback] = useState('');
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -126,6 +150,58 @@ export default function HomePage() {
     setTranscription('');
   };
 
+  const handleFeatureClick = (id: string) => {
+    if (id === 'voice') startRecording();
+    else if (id === 'shared') {
+      setFeedback('');
+      setSharedSheetOpen(true);
+    } else if (id === 'agenda') {
+      setFeedback('');
+      setAgendaSheetOpen(true);
+    }
+  };
+
+  // Tarefas compartilhadas — share the pending list via the Web Share API,
+  // falling back to copying it to the clipboard.
+  const shareTasks = async () => {
+    const pending = tasks.filter((t) => !t.completed);
+    const text = pending.length
+      ? `Minhas tarefas no NotionPulse:\n${pending.map((t) => `• ${t.title}`).join('\n')}`
+      : 'Minha lista de tarefas no NotionPulse';
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: 'NotionPulse', text });
+        setFeedback('Compartilhado!');
+      } else {
+        await navigator.clipboard.writeText(text);
+        setFeedback('Lista copiada para a área de transferência!');
+      }
+    } catch {
+      setFeedback('Não foi possível compartilhar.');
+    }
+  };
+
+  // Sintonize sua agenda — export pending tasks as an .ics calendar file that
+  // can be imported into Google Calendar, Apple Calendar, Outlook, etc.
+  const exportToCalendar = () => {
+    const pending = tasks.filter((t) => !t.completed);
+    if (pending.length === 0) {
+      setFeedback('Nenhuma tarefa pendente para sincronizar.');
+      return;
+    }
+    const ics = buildICS(pending);
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'notionpulse.ics';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setFeedback(`${pending.length} tarefa(s) exportada(s) para a agenda.`);
+  };
+
   const handleFileUpload = () => fileInputRef.current?.click();
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -148,27 +224,27 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative max-w-[390px] mx-auto min-h-screen bg-[#F5F5F0] flex flex-col overflow-hidden">
+    <div className="relative max-w-[390px] mx-auto min-h-screen bg-white flex flex-col overflow-hidden">
       {/* Header */}
       <header className="flex items-center justify-between px-5 pt-12 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#0D2137] flex items-center justify-center overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-[#eadbfa] flex items-center justify-center overflow-hidden">
             {user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-white text-sm font-bold">{user.name[0]}</span>
+              <span className="text-[#7237ae] text-sm font-bold">{user.name[0]}</span>
             )}
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#0D2137]">{user.name}</p>
-            <p className="text-xs text-gray-400">{user.email}</p>
+            <p className="text-xs font-semibold text-[#242320]">{user.name}</p>
+            <p className="text-[10px] text-[#78736f]">{user.email}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/pomodoro"
-            className="flex items-center gap-1.5 bg-[#0D2137] text-white text-xs px-3 py-1.5 rounded-full font-medium"
+            className="flex items-center gap-1.5 bg-white border border-[#edeceb] text-[#242320] text-xs px-3 py-2 rounded-full font-medium"
           >
             <span>⏱</span>
             <span>Pomodoro</span>
@@ -176,11 +252,11 @@ export default function HomePage() {
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menu"
-            className="w-9 h-9 flex flex-col items-center justify-center gap-1.5"
+            className="w-9 h-9 flex flex-col items-center justify-center gap-1.5 rounded-full bg-[#f7f7f5] border border-[#edeceb]"
           >
-            <span className="block w-5 h-0.5 bg-[#0D2137] rounded-full" />
-            <span className="block w-5 h-0.5 bg-[#0D2137] rounded-full" />
-            <span className="block w-3 h-0.5 bg-[#0D2137] rounded-full self-start" />
+            <span className="block w-4 h-0.5 bg-[#242320] rounded-full" />
+            <span className="block w-4 h-0.5 bg-[#242320] rounded-full" />
+            <span className="block w-4 h-0.5 bg-[#242320] rounded-full" />
           </button>
         </div>
       </header>
@@ -188,18 +264,21 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative px-5 pt-4 pb-2">
         <div className="relative">
-          <p className="text-gray-400 text-base">Olá, {user.name}.</p>
-          <h1 className="text-2xl font-bold text-[#0D2137] mt-1">Vamos começar?</h1>
-          <p className="text-sm text-gray-400 mt-1">Transforme ideias em ações.</p>
+          <h1 className="text-[40px] leading-[44px] font-medium tracking-[-0.4px]">
+            <span className="text-[#78736f]">Olá, {user.name}.</span>
+            <br />
+            <span className="text-[#242320]">Vamos começar?</span>
+          </h1>
+          <p className="text-sm text-[#78736f] mt-3">Transforme ideias em ações.</p>
 
           <div className="flex gap-3 mt-4">
-            <button className="w-10 h-10 rounded-xl bg-[#EDE9FE] flex items-center justify-center text-lg">🎤</button>
-            <button className="w-10 h-10 rounded-xl bg-[#E8F0F7] flex items-center justify-center text-lg">📋</button>
-            <button className="w-10 h-10 rounded-xl bg-[#FEF3C7] flex items-center justify-center text-lg">⚡</button>
+            <button className="w-12 h-12 rounded-2xl bg-[#eadbfa] flex items-center justify-center text-xl">☕</button>
+            <button className="w-12 h-12 rounded-2xl bg-[#e6f3fe] flex items-center justify-center text-xl">🐱</button>
+            <button className="w-12 h-12 rounded-2xl bg-[#ffdec4] flex items-center justify-center text-xl">🏀</button>
           </div>
 
-          <div className="absolute right-0 top-0 w-36 h-36 pointer-events-none">
-            <IllustrationHome width={144} height={144} aria-label="Home illustration" />
+          <div className="absolute right-[-10px] top-[68px] w-[150px] h-[150px] pointer-events-none">
+            <IllustrationHome width={150} height={150} aria-label="Home illustration" />
           </div>
         </div>
       </section>
@@ -209,22 +288,17 @@ export default function HomePage() {
         {featureItems.map((item) => (
           <button
             key={item.id}
-            className="w-full flex items-center gap-4 bg-white rounded-2xl px-4 py-3.5 shadow-sm hover:shadow-md transition-shadow text-left"
-            onClick={() => {
-              if (item.id === 'voice') startRecording();
-            }}
+            className="w-full flex items-center gap-4 bg-[#f7f7f5] rounded-2xl px-3 py-3 hover:bg-[#f0efed] transition-colors text-left"
+            onClick={() => handleFeatureClick(item.id)}
           >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-              style={{ backgroundColor: item.color }}
-            >
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-lg flex-shrink-0 shadow-[0px_2px_6px_0px_rgba(95,91,87,0.08)]">
               {item.icon}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-[#0D2137]">{item.title}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{item.subtitle}</p>
+              <p className="text-sm font-semibold text-[#242320]">{item.title}</p>
+              <p className="text-xs text-[#78736f] mt-0.5">{item.subtitle}</p>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-300 flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#a8a4a0] flex-shrink-0">
               <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -233,10 +307,10 @@ export default function HomePage() {
 
       {/* Task list */}
       <section className="px-5 pt-6 pb-4 flex-1">
-        <h2 className="text-sm font-semibold text-[#0D2137] mb-3">
+        <h2 className="text-sm font-semibold text-[#242320] mb-3">
           Suas tarefas
           {isAnalyzingImage && (
-            <span className="ml-2 text-xs font-normal text-gray-400">analisando imagem…</span>
+            <span className="ml-2 text-xs font-normal text-[#78736f]">analisando imagem…</span>
           )}
         </h2>
         {isLoading ? (
@@ -250,7 +324,7 @@ export default function HomePage() {
             {tasks.map((task: Task) => (
               <li
                 key={task.id}
-                className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm"
+                className="flex items-center gap-3 bg-[#f7f7f5] rounded-xl px-4 py-3"
               >
                 <button
                   onClick={() =>
@@ -258,7 +332,7 @@ export default function HomePage() {
                   }
                   aria-label="Concluir tarefa"
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    task.completed ? 'bg-[#7C3AED] border-[#7C3AED]' : 'border-gray-300'
+                    task.completed ? 'bg-[#7237ae] border-[#7237ae]' : 'border-gray-300'
                   }`}
                 >
                   {task.completed && (
@@ -269,7 +343,7 @@ export default function HomePage() {
                 </button>
                 <span
                   className={`text-sm flex-1 ${
-                    task.completed ? 'text-gray-400 line-through' : 'text-[#0D2137]'
+                    task.completed ? 'text-[#a8a4a0] line-through' : 'text-[#242320]'
                   }`}
                 >
                   {task.title}
@@ -290,15 +364,8 @@ export default function HomePage() {
       </section>
 
       {/* Bottom Chat Input */}
-      <div className="px-5 pb-8 pt-4 bg-[#F5F5F0]">
-        <div className="bg-white rounded-2xl shadow-md px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={handleFileUpload}
-            aria-label="Enviar imagem"
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors flex-shrink-0"
-          >
-            <span className="text-lg leading-none">+</span>
-          </button>
+      <div className="px-5 pb-8 pt-4 bg-white">
+        <div className="bg-white rounded-2xl border border-[#edeceb] shadow-[0px_8px_24px_0px_rgba(95,91,87,0.08)] px-4 py-3 flex flex-col gap-3">
           <input
             type="text"
             value={inputText}
@@ -307,11 +374,19 @@ export default function HomePage() {
               if (e.key === 'Enter') handleCreateFromInput();
             }}
             placeholder="Conte o que precisa organizar hoje"
-            className="flex-1 text-sm text-gray-600 bg-transparent outline-none placeholder:text-gray-300"
+            className="w-full text-sm text-[#242320] bg-transparent outline-none placeholder:text-[#a8a4a0]"
           />
+          <div className="flex items-center justify-between">
+          <button
+            onClick={handleFileUpload}
+            aria-label="Enviar imagem"
+            className="w-9 h-9 rounded-full bg-white border border-[#edeceb] flex items-center justify-center text-[#242320] hover:bg-[#f7f7f5] transition-colors flex-shrink-0"
+          >
+            <span className="text-lg leading-none">+</span>
+          </button>
           <button
             onClick={inputText.trim() ? handleCreateFromInput : startRecording}
-            className="flex items-center gap-1.5 bg-[#0D2137] text-white text-xs px-3.5 py-2 rounded-full font-medium flex-shrink-0"
+            className="flex items-center gap-1.5 bg-black text-white text-sm px-4 py-2 rounded-full font-medium flex-shrink-0"
           >
             {inputText.trim() ? (
               <span>Criar</span>
@@ -322,6 +397,7 @@ export default function HomePage() {
               </>
             )}
           </button>
+          </div>
         </div>
       </div>
 
@@ -348,23 +424,37 @@ export default function HomePage() {
             </div>
             <nav className="flex flex-col px-4 py-4 gap-1">
               {[
-                { icon: '🏠', label: 'Início', href: '/home' },
-                { icon: '🎤', label: 'Criar por voz', href: '#voice' },
-                { icon: '👥', label: 'Tarefas compartilhadas', href: '#shared' },
-                { icon: '📅', label: 'Minha agenda', href: '#agenda' },
-                { icon: '⏱', label: 'Pomodoro', href: '/pomodoro' },
-                { icon: '⚙️', label: 'Configurações', href: '#settings' },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-xl">{item.icon}</span>
-                  <span className="text-sm font-medium text-[#0D2137]">{item.label}</span>
-                </Link>
-              ))}
+                { icon: '🏠', label: 'Início', href: '/home' as const, action: undefined },
+                { icon: '🎤', label: 'Criar por voz', href: undefined, action: 'voice' as const },
+                { icon: '👥', label: 'Tarefas compartilhadas', href: undefined, action: 'shared' as const },
+                { icon: '📅', label: 'Sintonize sua agenda', href: undefined, action: 'agenda' as const },
+                { icon: '⏱', label: 'Pomodoro', href: '/pomodoro' as const, action: undefined },
+                { icon: '⚙️', label: 'Configurações', href: '/home' as const, action: undefined },
+              ].map((item) =>
+                item.action ? (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleFeatureClick(item.action);
+                    }}
+                    className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-sm font-medium text-[#242320]">{item.label}</span>
+                  </button>
+                ) : (
+                  <Link
+                    key={item.label}
+                    href={item.href!}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-sm font-medium text-[#242320]">{item.label}</span>
+                  </Link>
+                ),
+              )}
             </nav>
             <div className="mt-auto px-6 pb-8">
               <button
@@ -430,6 +520,66 @@ export default function HomePage() {
                 </button>
               </div>
             ) : null}
+          </div>
+        </>
+      )}
+
+      {/* Shared tasks bottom sheet */}
+      {sharedSheetOpen && (
+        <>
+          <div className="absolute inset-0 bg-black/60 z-40" onClick={() => setSharedSheetOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white z-50 rounded-t-3xl px-6 pt-6 pb-10">
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+            <h2 className="text-lg font-bold text-[#242320] text-center mb-2">Tarefas compartilhadas</h2>
+            <p className="text-sm text-[#78736f] text-center mb-5">
+              Compartilhe sua lista de tarefas com outras pessoas.
+            </p>
+            <div className="bg-[#f7f7f5] rounded-xl p-4 mb-4 max-h-40 overflow-y-auto">
+              {tasks.filter((t) => !t.completed).length === 0 ? (
+                <p className="text-xs text-[#78736f]">Nenhuma tarefa pendente para compartilhar.</p>
+              ) : (
+                <ul className="flex flex-col gap-1.5">
+                  {tasks.filter((t) => !t.completed).map((t) => (
+                    <li key={t.id} className="text-sm text-[#242320]">• {t.title}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {feedback && <p className="text-sm text-[#7237ae] text-center mb-4">{feedback}</p>}
+            <button
+              onClick={shareTasks}
+              className="w-full py-3 rounded-xl bg-black text-white text-sm font-medium"
+            >
+              Compartilhar lista
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Agenda sync bottom sheet */}
+      {agendaSheetOpen && (
+        <>
+          <div className="absolute inset-0 bg-black/60 z-40" onClick={() => setAgendaSheetOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white z-50 rounded-t-3xl px-6 pt-6 pb-10">
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+            <h2 className="text-lg font-bold text-[#242320] text-center mb-2">Sintonize sua agenda</h2>
+            <p className="text-sm text-[#78736f] text-center mb-5">
+              Exporte suas tarefas pendentes como um arquivo de calendário (.ics) e importe no
+              Google Agenda, Apple Calendar ou Outlook.
+            </p>
+            {feedback && <p className="text-sm text-[#7237ae] text-center mb-4">{feedback}</p>}
+            <button
+              onClick={exportToCalendar}
+              className="w-full py-3 rounded-xl bg-black text-white text-sm font-medium mb-3"
+            >
+              Adicionar à agenda (.ics)
+            </button>
+            <button
+              onClick={() => setAgendaSheetOpen(false)}
+              className="w-full py-3 rounded-xl border border-[#edeceb] text-sm font-medium text-[#78736f]"
+            >
+              Fechar
+            </button>
           </div>
         </>
       )}
