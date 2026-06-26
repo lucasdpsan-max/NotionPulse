@@ -31,8 +31,8 @@ export default function PomodoroPage() {
   const updateTask = useUpdateTask();
   const pendingTasks = tasks.filter((t) => !t.completed);
 
-  const [minutes, setMinutes] = useState(25);
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [minutes, setMinutes] = useState(15);
+  const [secondsLeft, setSecondsLeft] = useState(15 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -164,19 +164,19 @@ export default function PomodoroPage() {
   const handlePoint = polarToCartesian(CX, CY, RADIUS, progressAngle);
 
   return (
-    <div className="flex flex-col max-w-[390px] mx-auto min-h-screen bg-[#F5F5F0]">
+    <div className="flex flex-col max-w-[390px] mx-auto min-h-screen bg-white">
       {/* Header */}
       <header className="flex items-center justify-between px-5 pt-12 pb-4">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-[#f7f7f5] border border-[#edeceb]"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="#0D2137" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M18 6L6 18M6 6l12 12" stroke="#242320" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </button>
-        <h1 className="text-base font-bold text-[#0D2137]">Pomodoro</h1>
-        <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white shadow-sm text-lg">
+        <h1 className="text-base font-semibold text-[#242320]">Pomodoro</h1>
+        <button className="w-9 h-9 flex items-center justify-center rounded-full bg-[#f7f7f5] border border-[#edeceb] text-lg">
           🎵
         </button>
       </header>
@@ -185,7 +185,7 @@ export default function PomodoroPage() {
       <div className="flex justify-center mb-4">
         <button
           onClick={() => setTaskSheetOpen(true)}
-          className="flex items-center gap-2 bg-white rounded-full px-4 py-2 text-sm font-medium text-[#0D2137] shadow-sm"
+          className="flex items-center gap-2 bg-[#f7f7f5] border border-[#edeceb] rounded-full px-4 py-2 text-sm font-medium text-[#242320]"
         >
           {linkedTask ? (
             <>
@@ -203,8 +203,12 @@ export default function PomodoroPage() {
 
       {/* Title */}
       <div className="text-center px-5 mb-6">
-        <h2 className="text-xl font-bold text-[#0D2137]">Ativar ⚡ modo foco</h2>
-        <p className="text-sm text-gray-400 mt-1">Foque em uma tarefa de cada vez</p>
+        <h2 className="text-2xl font-medium">
+          <span className="text-[#78736f]">Ativar </span>
+          <span className="text-[#e89d01]">⚡</span>
+          <span className="text-[#242320]"> modo foco</span>
+        </h2>
+        <p className="text-sm text-[#78736f] mt-1">Foque em uma tarefa de cada vez</p>
       </div>
 
       {/* Circular Timer */}
@@ -216,7 +220,20 @@ export default function PomodoroPage() {
           viewBox="0 0 320 320"
           className="select-none touch-none"
         >
-          {/* Tick marks */}
+          <defs>
+            {/* Background ring: lighter lilac -> darker lilac */}
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#f3ebfc" />
+              <stop offset="100%" stopColor="#c9a8ec" />
+            </linearGradient>
+            {/* Progress arc: medium -> darkest purple */}
+            <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#a06fd0" />
+              <stop offset="100%" stopColor="#7237ae" />
+            </linearGradient>
+          </defs>
+
+          {/* Tick marks every 10° */}
           {ticks.map((tick, i) => (
             <line
               key={i}
@@ -224,19 +241,19 @@ export default function PomodoroPage() {
               y1={tick.inner.y}
               x2={tick.outer.x}
               y2={tick.outer.y}
-              stroke={tick.isHighlight ? '#C4B5FD' : '#DDD6FE'}
+              stroke={tick.isHighlight ? '#c9a8ec' : '#eadbfa'}
               strokeWidth={tick.isHighlight ? 2 : 1}
               strokeLinecap="round"
             />
           ))}
 
-          {/* Background arc (full circle gradient-like) */}
+          {/* Background ring with light -> dark lilac gradient */}
           <circle
             cx={CX}
             cy={CY}
             r={RADIUS}
             fill="none"
-            stroke="#EDE9FE"
+            stroke="url(#ringGrad)"
             strokeWidth={STROKE_WIDTH}
           />
 
@@ -245,11 +262,35 @@ export default function PomodoroPage() {
             <path
               d={describeArc(CX, CY, RADIUS, 0, Math.min(progressAngle, 359.99))}
               fill="none"
-              stroke="#7C3AED"
+              stroke="url(#progGrad)"
               strokeWidth={STROKE_WIDTH}
               strokeLinecap="round"
             />
           )}
+
+          {/* Dial labels: 60 (top), 15 (right), 30 (bottom), 45 (left) */}
+          {([
+            { label: '60', angle: 0 },
+            { label: '15', angle: 90 },
+            { label: '30', angle: 180 },
+            { label: '45', angle: 270 },
+          ] as const).map(({ label, angle: a }) => {
+            const p = polarToCartesian(CX, CY, RADIUS - 30, a);
+            return (
+              <text
+                key={label}
+                x={p.x}
+                y={p.y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize="15"
+                fill="#78736f"
+                fontFamily="Inter, system-ui, sans-serif"
+              >
+                {label}
+              </text>
+            );
+          })}
 
           {/* Draggable handle */}
           <circle
@@ -257,7 +298,7 @@ export default function PomodoroPage() {
             cy={handlePoint.y}
             r={14}
             fill="white"
-            stroke="#7C3AED"
+            stroke="#7237ae"
             strokeWidth={2}
             className="cursor-grab active:cursor-grabbing"
             onMouseDown={(e) => {
@@ -273,7 +314,7 @@ export default function PomodoroPage() {
           <path
             d={`M ${handlePoint.x - 4} ${handlePoint.y - 2} L ${handlePoint.x} ${handlePoint.y + 2} L ${handlePoint.x + 4} ${handlePoint.y - 2}`}
             fill="none"
-            stroke="#7C3AED"
+            stroke="#7237ae"
             strokeWidth={1.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -285,21 +326,22 @@ export default function PomodoroPage() {
             y={CY - 10}
             textAnchor="middle"
             dominantBaseline="middle"
-            fontSize="42"
-            fontWeight="700"
-            fill="#0D2137"
-            fontFamily="system-ui, sans-serif"
+            fontSize="48"
+            fontWeight="500"
+            fill="#000000"
+            fontFamily="Geist, system-ui, sans-serif"
+            letterSpacing="-0.4"
           >
             {timeString}
           </text>
           <text
             x={CX}
-            y={CY + 28}
+            y={CY + 30}
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize="14"
-            fill="#9CA3AF"
-            fontFamily="system-ui, sans-serif"
+            fill="#78736f"
+            fontFamily="Inter, system-ui, sans-serif"
           >
             minutos
           </text>
@@ -339,7 +381,7 @@ export default function PomodoroPage() {
         {/* Play button (large) */}
         <button
           onClick={isRunning ? handleStop : handlePlay}
-          className="w-16 h-16 rounded-full bg-[#0D2137] flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          className="w-16 h-16 rounded-full bg-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
           {isRunning ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -373,7 +415,7 @@ export default function PomodoroPage() {
       <div className="flex justify-center mb-4">
         <button
           onClick={handleFinish}
-          className="text-sm font-medium text-[#7C3AED] px-6 py-2"
+          className="text-sm font-medium text-[#7237ae] px-6 py-2"
         >
           Finalizar
         </button>
