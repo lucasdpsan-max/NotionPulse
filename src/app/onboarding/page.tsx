@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import IllustrationSvg from '@/assets/illustration.svg';
 import Illustration1Svg from '@/assets/illustration-1.svg';
 import Illustration2Svg from '@/assets/illustration-2.svg';
@@ -41,9 +42,18 @@ const steps: {
 const STEP_DURATION = 4000;
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
+  const [googleConfigured, setGoogleConfigured] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then((r) => r.json())
+      .then((d) => setGoogleConfigured(Boolean(d.googleConfigured)))
+      .catch(() => setGoogleConfigured(false));
+  }, []);
 
   const goToNext = useCallback(() => {
     setAnimating(true);
@@ -63,7 +73,12 @@ export default function OnboardingPage() {
   const { Illustration } = step;
 
   const handleGoogleLogin = async () => {
-    await signIn('google', { callbackUrl: '/home' });
+    if (googleConfigured) {
+      await signIn('google', { callbackUrl: '/home' });
+    } else {
+      // Google not configured yet — enter the app via the local demo user.
+      router.push('/home');
+    }
   };
 
   return (
