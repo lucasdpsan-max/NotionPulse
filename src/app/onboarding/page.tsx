@@ -9,32 +9,76 @@ import Illustration2Svg from '@/assets/illustration-2.svg';
 
 type IllustrationComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
-const steps: {
+const MicIcon = ({ color }: { color: string }) => (
+  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" className="inline-block align-middle">
+    <rect x="9" y="3" width="6" height="11" rx="3" stroke={color} strokeWidth="1.6" />
+    <path d="M6 11a6 6 0 0012 0M12 17v4M9 21h6" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+const CalendarIcon = ({ color }: { color: string }) => (
+  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" className="inline-block align-middle">
+    <rect x="3" y="5" width="18" height="16" rx="2" stroke={color} strokeWidth="1.6" />
+    <path d="M3 9h18M8 3v4M16 3v4" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+const PeopleIcon = ({ color }: { color: string }) => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="inline-block align-middle">
+    <circle cx="9" cy="8" r="3" stroke={color} strokeWidth="1.6" />
+    <circle cx="16.5" cy="9" r="2.3" stroke={color} strokeWidth="1.6" />
+    <path d="M3.5 19a5.5 5.5 0 0111 0M15 19a5 5 0 015.5-4.9" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+type Step = {
   bg: string;
-  badge: string;
   title: string;
+  accent: string;
+  subtitleColor: string;
+  badge: string;
+  titleBefore: string;
+  titleAfter: string;
+  Icon: ({ color }: { color: string }) => React.ReactElement;
   subtitle: string;
   Illustration: IllustrationComponent;
-}[] = [
+};
+
+const steps: Step[] = [
   {
-    bg: '#E8F0F7',
+    bg: '#f7fbff',
+    title: '#002a4f',
+    accent: '#002a4f',
+    subtitleColor: '#00396b',
     badge: 'Pulse • Voice',
-    title: 'Crie tarefas por comando de 🎤 voz',
+    titleBefore: 'Crie tarefas por comando de',
+    titleAfter: 'voz',
+    Icon: MicIcon,
     subtitle: 'Fale naturalmente e transforme suas ideias em tarefas.',
     Illustration: IllustrationSvg as IllustrationComponent,
   },
   {
-    bg: '#F0EBF7',
-    badge: 'Pulse • Share',
-    title: 'Compartilhe tarefas com sua equipe 👥',
-    subtitle: 'Planeje e colabore com outras pessoas em tempo real.',
+    bg: '#f7fcf8',
+    title: '#05210b',
+    accent: '#0f6220',
+    subtitleColor: '#0a4216',
+    badge: 'Pulse • Calendar',
+    titleBefore: 'Sua agenda sempre',
+    titleAfter: 'em ordem',
+    Icon: CalendarIcon,
+    subtitle: 'Sincronize seus compromissos e veja tudo em um só lugar.',
     Illustration: Illustration1Svg as IllustrationComponent,
   },
   {
-    bg: '#EBF5F0',
-    badge: 'Pulse • Sync',
-    title: 'Sincronize com sua agenda 📅',
-    subtitle: 'Conecte seus compromissos e nunca perca um prazo.',
+    bg: '#fcfaff',
+    title: '#1c0e2c',
+    accent: '#7237ae',
+    subtitleColor: '#391c57',
+    badge: 'Pulse • Team',
+    titleBefore: 'Crie uma agenda com seu',
+    titleAfter: 'grupo',
+    Icon: PeopleIcon,
+    subtitle: 'Planeje estudos e compromissos em uma agenda compartilhada.',
     Illustration: Illustration2Svg as IllustrationComponent,
   },
 ];
@@ -70,7 +114,7 @@ export default function OnboardingPage() {
   }, [goToNext]);
 
   const step = steps[currentStep];
-  const { Illustration } = step;
+  const { Illustration, Icon } = step;
 
   const handleGoogleLogin = async () => {
     if (googleConfigured) {
@@ -82,43 +126,45 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex flex-col max-w-[390px] mx-auto min-h-screen bg-white">
+    <div className="flex flex-col max-w-[390px] mx-auto min-h-screen" style={{ backgroundColor: step.bg, transition: 'background-color 0.4s ease' }}>
       {/* Sliding top section */}
       <div
         className="flex-1 flex flex-col items-center px-6 pt-10 pb-6"
         style={{
-          backgroundColor: step.bg,
           opacity: animating ? 0 : 1,
-          transform: animating ? 'translateX(-30px)' : 'translateX(0)',
-          transition: 'opacity 0.4s ease, transform 0.4s ease, background-color 0.4s ease',
+          transform: animating ? 'translateX(-40px)' : 'translateX(0)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
         }}
       >
+        {/* Illustration */}
+        <div className="w-full flex justify-center mb-6 mt-4">
+          <Illustration width={300} height={240} className="max-w-full" aria-label="Illustration" />
+        </div>
+
         {/* Badge */}
-        <div className="self-start mb-6">
-          <span className="text-xs font-semibold bg-white/60 backdrop-blur-sm text-[#0D2137] px-3 py-1.5 rounded-full border border-white/40">
+        <div className="flex items-center gap-1.5 mb-4">
+          <span className="w-4 h-4 rounded-[4px] bg-black flex items-center justify-center text-white text-[9px] font-bold leading-none">
+            N
+          </span>
+          <span className="text-xs font-medium" style={{ color: step.title }}>
             {step.badge}
           </span>
         </div>
 
-        {/* Illustration */}
-        <div className="w-full flex justify-center mb-8">
-          <Illustration
-            width={280}
-            height={220}
-            className="max-w-full"
-            aria-label="Illustration"
-          />
-        </div>
+        {/* Title */}
+        <h1
+          className="text-center font-medium tracking-[-0.4px] text-[40px] leading-[44px]"
+          style={{ color: step.title, fontFamily: 'var(--font-geist-sans), Geist, sans-serif' }}
+        >
+          {step.titleBefore}{' '}
+          <Icon color={step.accent} />{' '}
+          {step.titleAfter}
+        </h1>
 
-        {/* Text */}
-        <div className="w-full text-left">
-          <h1 className="text-2xl font-bold text-[#0D2137] leading-tight mb-3">
-            {step.title}
-          </h1>
-          <p className="text-sm text-gray-500 leading-relaxed">
-            {step.subtitle}
-          </p>
-        </div>
+        {/* Subtitle */}
+        <p className="text-center text-base leading-6 mt-4 px-2" style={{ color: step.subtitleColor }}>
+          {step.subtitle}
+        </p>
 
         {/* Progress dots */}
         <div className="flex items-center gap-2 mt-8">
@@ -129,46 +175,27 @@ export default function OnboardingPage() {
                 setCurrentStep(i);
                 setProgressKey((k) => k + 1);
               }}
+              aria-label={`Ir para o passo ${i + 1}`}
               className="transition-all duration-300"
             >
               <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === currentStep
-                    ? 'w-8 bg-[#0D2137]'
-                    : 'w-2 bg-gray-300'
-                }`}
+                className="h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentStep ? 28 : 24,
+                  backgroundColor: i === currentStep ? step.accent : '#00000020',
+                }}
               />
             </button>
           ))}
         </div>
-
-        {/* Progress bar fill */}
-        <div className="w-full mt-4 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-          <div
-            key={progressKey}
-            className="h-full bg-[#0D2137] rounded-full"
-            style={{
-              animation: `fillProgress ${STEP_DURATION}ms linear forwards`,
-            }}
-          />
-        </div>
       </div>
 
       {/* Fixed bottom section */}
-      <div className="bg-white px-6 py-8 flex flex-col gap-4">
-        {/* Terms */}
-        <p className="text-xs text-gray-400 text-center">
-          <button className="hover:underline">Termos de uso</button>
-          {' • '}
-          <button className="hover:underline">Política de privacidade</button>
-          {' • '}
-          <span>© Boost</span>
-        </p>
-
+      <div className="px-6 pb-8 pt-4 flex flex-col gap-5" style={{ backgroundColor: step.bg, transition: 'background-color 0.4s ease' }}>
         {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-full py-3.5 px-6 shadow-sm hover:shadow-md transition-shadow"
+          className="w-full flex items-center justify-center gap-3 bg-white rounded-full py-4 px-6 shadow-[0px_2px_2px_0px_rgba(0,57,107,0.1),0px_8px_12px_0px_rgba(0,57,107,0.1)] active:scale-[0.99] transition-transform"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -176,16 +203,18 @@ export default function OnboardingPage() {
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
           </svg>
-          <span className="text-sm font-medium text-gray-700">Login com o Google</span>
+          <span className="text-sm font-medium text-[#242320]">Login com o Google</span>
         </button>
-      </div>
 
-      <style jsx global>{`
-        @keyframes fillProgress {
-          from { width: 0%; }
-          to { width: 100%; }
-        }
-      `}</style>
+        {/* Terms */}
+        <p className="text-xs text-[#78736f] text-center">
+          <button className="hover:underline">Termos de uso</button>
+          {'  •  '}
+          <button className="hover:underline">Política de privacidade</button>
+          {'  •  '}
+          <span>© Boost</span>
+        </p>
+      </div>
     </div>
   );
 }
