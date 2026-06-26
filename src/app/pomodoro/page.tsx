@@ -285,7 +285,7 @@ export default function PomodoroPage() {
                 dominantBaseline="middle"
                 fontSize="15"
                 fill="#78736f"
-                fontFamily="Inter, system-ui, sans-serif"
+                fontFamily="Roboto, system-ui, sans-serif"
               >
                 {label}
               </text>
@@ -329,7 +329,7 @@ export default function PomodoroPage() {
             fontSize="48"
             fontWeight="500"
             fill="#000000"
-            fontFamily="Geist, system-ui, sans-serif"
+            fontFamily="Roboto, system-ui, sans-serif"
             letterSpacing="-0.4"
           >
             {timeString}
@@ -341,7 +341,7 @@ export default function PomodoroPage() {
             dominantBaseline="middle"
             fontSize="18"
             fill="#78736f"
-            fontFamily="Inter, system-ui, sans-serif"
+            fontFamily="Roboto, system-ui, sans-serif"
           >
             minutos
           </text>
@@ -354,7 +354,7 @@ export default function PomodoroPage() {
               dominantBaseline="middle"
               fontSize="12"
               fill="#10B981"
-              fontFamily="system-ui, sans-serif"
+              fontFamily="Roboto, system-ui, sans-serif"
             >
               ✓ Concluído!
             </text>

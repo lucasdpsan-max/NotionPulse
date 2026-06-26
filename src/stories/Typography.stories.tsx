@@ -19,12 +19,12 @@ const TypographyScale = () => (
   <div className="p-8 bg-white min-h-screen max-w-2xl">
     <h1 className="text-2xl font-bold text-[#242320] mb-1">Tipografia</h1>
     <p className="text-sm text-[#78736f] mb-8">
-      Geist (headings) · Inter (body) — escala extraída do Figma.
+      Roboto — escala extraída do Figma.
     </p>
 
     <section className="mb-10">
       <h2 className="text-xs font-semibold text-[#78736f] uppercase tracking-wider mb-6">
-        Headings · Geist
+        Headings · Roboto
       </h2>
       <div className="flex flex-col gap-6">
         {headingStyles.map(({ label, size, lh, ls, text }) => (
@@ -49,7 +49,7 @@ const TypographyScale = () => (
 
     <section className="mb-10">
       <h2 className="text-xs font-semibold text-[#78736f] uppercase tracking-wider mb-6">
-        Body · Inter
+        Body · Roboto
       </h2>
       <div className="flex flex-col gap-4">
         {bodyStyles.map(({ label, size, lh, text }) => (
