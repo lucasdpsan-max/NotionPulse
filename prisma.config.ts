@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -7,6 +7,8 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: env('DATABASE_URL'),
+    // Fallback keeps `prisma generate` working during builds where no DB URL is
+    // set (e.g. a no-DB Vercel deploy). generate doesn't connect to the DB.
+    url: process.env.DATABASE_URL ?? 'file:./dev.db',
   },
 });
