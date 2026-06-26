@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTasks, useUpdateTask, type Task } from '@/hooks/use-tasks';
 
 const RADIUS = 120;
 const CX = 160;
@@ -24,24 +25,23 @@ function describeArc(cx: number, cy: number, r: number, startAngle: number, endA
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
 }
 
-const mockTasks = [
-  { id: '1', title: 'Reunião com a equipe', dueDate: 'Hoje 10:00' },
-  { id: '2', title: 'Revisar proposta do cliente', dueDate: 'Hoje 14:00' },
-  { id: '3', title: 'Responder e-mails pendentes', dueDate: 'Hoje 16:00' },
-  { id: '4', title: 'Atualizar documentação', dueDate: 'Amanhã' },
-];
-
 export default function PomodoroPage() {
   const router = useRouter();
+  const { data: tasks = [] } = useTasks();
+  const updateTask = useUpdateTask();
+  const pendingTasks = tasks.filter((t) => !t.completed);
+
   const [minutes, setMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [taskSheetOpen, setTaskSheetOpen] = useState(false);
-  const [linkedTask, setLinkedTask] = useState<string | null>(null);
+  const [linkedTaskId, setLinkedTaskId] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const linkedTask = tasks.find((t) => t.id === linkedTaskId) ?? null;
 
   // Calculate angle from minutes (1-60 → 6° to 360°)
   const angle = (minutes / 60) * 360;
@@ -118,6 +118,21 @@ export default function PomodoroPage() {
     };
   }, [isRunning]);
 
+  // When the timer finishes, mark the linked task as completed.
+  useEffect(() => {
+    if (isDone && linkedTaskId) {
+      updateTask.mutate({ id: linkedTaskId, completed: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDone]);
+
+  const handleFinish = () => {
+    if (linkedTaskId) {
+      updateTask.mutate({ id: linkedTaskId, completed: true });
+    }
+    router.back();
+  };
+
   const handlePlay = () => {
     if (isDone) {
       handleReset();
@@ -175,7 +190,7 @@ export default function PomodoroPage() {
           {linkedTask ? (
             <>
               <span className="text-green-500">✓</span>
-              <span className="max-w-[180px] truncate">{linkedTask}</span>
+              <span className="max-w-[180px] truncate">{linkedTask.title}</span>
             </>
           ) : (
             <>
@@ -357,7 +372,7 @@ export default function PomodoroPage() {
       {/* Finalizar button */}
       <div className="flex justify-center mb-4">
         <button
-          onClick={() => router.back()}
+          onClick={handleFinish}
           className="text-sm font-medium text-[#7C3AED] px-6 py-2"
         >
           Finalizar
@@ -383,24 +398,25 @@ export default function PomodoroPage() {
             <div className="px-5 py-4">
               <h3 className="text-base font-bold text-[#0D2137] mb-4">Selecionar tarefa</h3>
               <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-                {mockTasks.map((task) => (
-                  <button
-                    key={task.id}
-                    onClick={() => {
-                      setLinkedTask(task.title);
-                      setTaskSheetOpen(false);
-                    }}
-                    className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:bg-gray-50 text-left"
-                  >
-                    <div>
+                {pendingTasks.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-4 text-center">
+                    Nenhuma tarefa pendente. Crie tarefas na tela inicial.
+                  </p>
+                ) : (
+                  pendingTasks.map((task: Task) => (
+                    <button
+                      key={task.id}
+                      onClick={() => {
+                        setLinkedTaskId(task.id);
+                        setTaskSheetOpen(false);
+                      }}
+                      className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:bg-gray-50 text-left"
+                    >
                       <p className="text-sm font-medium text-[#0D2137]">{task.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{task.dueDate}</p>
-                    </div>
-                    {linkedTask === task.title && (
-                      <span className="text-[#7C3AED]">✓</span>
-                    )}
-                  </button>
-                ))}
+                      {linkedTaskId === task.id && <span className="text-[#7C3AED]">✓</span>}
+                    </button>
+                  ))
+                )}
               </div>
               <button
                 onClick={() => setTaskSheetOpen(false)}
