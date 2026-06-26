@@ -15,27 +15,24 @@ export default function SplashPage() {
   }, [router]);
 
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen max-w-[390px] mx-auto bg-[#F5F5F0] px-6 py-10">
+    <div className="flex flex-col items-center justify-between min-h-screen max-w-[390px] mx-auto bg-[#fbfbfa] px-6 py-14">
       {/* Top disclaimer */}
-      <p className="text-xs text-gray-400 text-center mt-4">
+      <p className="text-xs text-[#5f5b57] text-center">
         Estudo sem vínculo oficial com a marca
       </p>
 
       {/* Center content */}
-      <div className="flex flex-col items-center gap-4">
-        <LogoSvg width={96} height={96} aria-label="NotionPulse" />
-        <h1 className="text-3xl font-bold text-[#0D2137] tracking-tight">
-          NotionPulse
-        </h1>
-        <p className="text-sm text-gray-500 text-center">
+      <div className="flex flex-col items-center gap-3">
+        <LogoSvg width={190} height={102} aria-label="Notion Pulse" />
+        <p className="text-xs text-[#5f5b57] text-center">
           Checklist por comando de voz
         </p>
       </div>
 
       {/* Bottom credit */}
-      <p className="text-xs text-gray-400 text-center mb-4">
+      <p className="text-xs text-[#5f5b57] text-center">
         Feito com amor por ensinar por{' '}
-        <span className="font-bold text-gray-600">Design Boost</span>
+        <span className="font-semibold text-black">Design Boost</span>
       </p>
     </div>
   );
