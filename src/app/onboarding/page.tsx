@@ -154,7 +154,7 @@ export default function OnboardingPage() {
         {/* Title */}
         <h1
           className="text-center font-medium tracking-[-0.4px] text-[40px] leading-[44px]"
-          style={{ color: step.title, fontFamily: 'var(--font-geist-sans), Geist, sans-serif' }}
+          style={{ color: step.title, fontFamily: 'var(--font-sans), Roboto, sans-serif' }}
         >
           {step.titleBefore}{' '}
           <Icon color={step.accent} />{' '}

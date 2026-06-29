@@ -123,8 +123,8 @@ export const colorGroups: { name: string; tokens: { key: keyof typeof colors; la
 ];
 
 export const typography = {
-  fontHeading: 'var(--font-geist-sans), Geist, system-ui, sans-serif',
-  fontBody: 'Inter, system-ui, sans-serif',
+  fontHeading: 'var(--font-sans), Roboto, system-ui, sans-serif',
+  fontBody: 'var(--font-sans), Roboto, system-ui, sans-serif',
 
   // Font sizes (px)
   size: {

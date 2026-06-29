@@ -56,11 +56,11 @@ const TokensOverview = () => (
       <div className="bg-white rounded-2xl border border-[#edeceb] p-6 grid grid-cols-2 gap-4">
         <div>
           <p className="text-xs text-[#78736f] mb-1">Heading</p>
-          <p className="text-sm font-mono text-[#242320]">Geist</p>
+          <p className="text-sm font-mono text-[#242320]">Roboto</p>
         </div>
         <div>
           <p className="text-xs text-[#78736f] mb-1">Body</p>
-          <p className="text-sm font-mono text-[#242320]">Inter</p>
+          <p className="text-sm font-mono text-[#242320]">Roboto</p>
         </div>
         <div>
           <p className="text-xs text-[#78736f] mb-1">Sizes</p>
